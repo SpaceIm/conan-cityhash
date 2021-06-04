@@ -41,19 +41,13 @@ class CityhashConan(ConanFile):
             raise ConanInvalidConfiguration("cityhash does not support shared builds with Visual Studio")
 
     def build_requirements(self):
+        self.build_requires("libtool/2.4.6")
         if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH"):
             self.build_requires("msys2/cci.latest")
-        if self.settings.compiler == "Visual Studio":
-            self.build_requires("automake/1.16.2")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
                   destination=self._source_subfolder, strip_root=True)
-
-    @staticmethod
-    def _chmod_plus_x(filename):
-        if os.name == "posix":
-            os.chmod(filename, os.stat(filename).st_mode | 0o111)
 
     @contextmanager
     def _build_context(self):
@@ -85,8 +79,8 @@ class CityhashConan(ConanFile):
         return self._autotools
 
     def build(self):
-        for script in ["configure", "install-sh"]:
-            self._chmod_plus_x(os.path.join(self._source_subfolder, script))
+        with tools.chdir(self._source_subfolder):
+            self.run("{} -fiv".format(tools.get_env("AUTORECONF")), win_bash=tools.os_info.is_windows)
         with self._build_context():
             autotools = self._configure_autotools()
             autotools.make()
