@@ -58,10 +58,6 @@ class CityhashConan(ConanFile):
                     "CXX": "{} cl -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
                     "LD": "{} link -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
                     "AR": "{} lib".format(tools.unix_path(self.deps_user_info["automake"].ar_lib)),
-                    "STRIP": ":",
-                    "RANLIB": ":",
-                    "DLLTOOL": ":",
-                    "OBJDUMP": ":",
                 }
                 with tools.environment_append(env):
                     yield
@@ -79,6 +75,7 @@ class CityhashConan(ConanFile):
             "--enable-shared={}".format(yes_no(self.options.shared)),
         ]
         if self.settings.compiler == "Visual Studio":
+            self._autotools.cxx_flags.append("-EHsc")
             self._autotools.flags.append("-FS")
         self._autotools.configure(configure_dir=self._source_subfolder, args=args)
         return self._autotools
